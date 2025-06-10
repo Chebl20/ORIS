@@ -76,8 +76,10 @@ const statusValidation = [
 // Routes
 router.post('/upload', auth, examController.uploadExam);
 router.get('/user', auth, examController.getUserExams);
+router.get('/status', auth, examController.getExamStatus);
 router.get('/:id', auth, examController.getExam);
 router.delete('/:id', auth, examController.deleteExam);
 router.patch('/:id/status', adminAuth, statusValidation, examController.updateExamStatus);
+router.get('/type/:type', auth, examController.getExamsByType);
 
 module.exports = router; 

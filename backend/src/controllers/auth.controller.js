@@ -44,6 +44,8 @@ const register = async (req, res) => {
       name,
       email,
       password,
+      birthDate: req.body.birthDate,
+      phone: req.body.phone,
       role: role || 'user' // Default to 'user' if no role provided
     });
 
@@ -62,7 +64,11 @@ const register = async (req, res) => {
       refreshToken
     });
   } catch (error) {
-    res.status(500).json({ error: 'Error creating user' });
+    console.error('Erro ao registrar usuário:', error);
+    res.status(500).json({
+      error: 'Error creating user',
+      details: error.message
+    });
   }
 };
 

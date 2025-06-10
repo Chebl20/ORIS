@@ -114,21 +114,63 @@ const deleteUser = async (req, res) => {
 // Get system statistics
 const getStats = async (req, res) => {
   try {
-    const totalUsers = await User.countDocuments({role: 'user'});
+    // 🔧 Datas de referência
+    const today = new Date();
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(today.getDate() - 30);
+
+    const soon = new Date();
+    soon.setDate(today.getDate() + 15);
+
+    // 📊 Estatísticas gerais
+    const totalUsers = await User.countDocuments({ role: 'user' });
+    const recentUsers = await User.countDocuments({ createdAt: { $gte: thirtyDaysAgo } });
+    const activeUsers = await User.countDocuments({ lastLogin: { $gte: thirtyDaysAgo } });
+
     const totalExams = await Exam.countDocuments();
     const pendingExams = await Exam.countDocuments({ status: 'pending' });
     const expiredExams = await Exam.countDocuments({ isExpired: true });
+    const expiringSoon = await Exam.countDocuments({
+      expiresAt: { $gte: today, $lte: soon }
+    });
 
+    // 🧪 Exames por tipo
+    const examsByType = await Exam.aggregate([
+      { $group: { _id: '$type', count: { $sum: 1 } } }
+    ]);
+
+    // 📋 Exames por status
+    const examStatusCounts = await Exam.aggregate([
+      { $group: { _id: '$status', count: { $sum: 1 } } }
+    ]);
+
+    // 🏆 Top usuários por score
+    const topUsers = await User.find({ role: 'user' })
+      .sort({ score: -1 })
+      .limit(5)
+      .select('name score');
+
+    // ✅ Resposta final
     res.json({
       totalUsers,
+      recentUsers,
+      activeUsers,
       totalExams,
       pendingExams,
-      expiredExams
+      expiredExams,
+      expiringSoon,
+      examsByType,
+      examStatusCounts,
+      topUsers
     });
   } catch (error) {
-    res.status(500).json({ error: 'Error fetching statistics' });
+    console.error('Erro no relatório admin:', error);
+    res.status(500).json({ error: 'Erro ao buscar estatísticas' });
   }
 };
+
+
 
 module.exports = {
   getAllUsers,

@@ -18,9 +18,10 @@ const checkInValidation = [
 ];
 
 // Routes
-router.get('/tasks', auth, dailyController.getDailyTasks);
+router.get('/tasks', auth, dailyController.getDailyPills);
 router.post('/checkin', auth, checkInValidation, dailyController.completeCheckIn);
 router.get('/score', auth, dailyController.getUserScore);
 router.get('/leaderboard', auth, dailyController.getLeaderboard);
+// router.get('/pills/daily', auth, dailyController.getDailyPills);
 
 module.exports = router; 

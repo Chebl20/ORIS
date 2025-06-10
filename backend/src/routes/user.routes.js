@@ -45,5 +45,6 @@ router.patch('/profile', auth, userController.updateProfile);
 router.get('/health', auth, userController.getHealthData);
 router.patch('/health', auth, healthDataValidation, userController.updateHealthData);
 router.patch('/privacy', auth, privacySettingsValidation, userController.updatePrivacySettings);
+router.get('/dashboard', auth, userController.getUserDashboard);
 
 module.exports = router; 

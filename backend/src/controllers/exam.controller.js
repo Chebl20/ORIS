@@ -312,10 +312,60 @@ const updateExamStatus = async (req, res) => {
   }
 };
 
+// Checar status dos exames por tipo
+const getExamStatus = async (req, res) => {
+  const examTypes = ['blood', 'urine', 'xray', 'mri', 'ct', 'other'];
+  try {
+    const exams = await Exam.find({ userId: req.user._id });
+    const now = new Date();
+    const status = {};
+    examTypes.forEach(type => {
+      // Filtra exames válidos desse tipo
+      const validExams = exams.filter(
+        exam => exam.type === type && exam.expiresAt > now
+      );
+      if (validExams.length > 0) {
+        // Pega o exame com a maior data de expiração
+        const latest = validExams.reduce((a, b) => a.expiresAt > b.expiresAt ? a : b);
+        status[type] = {
+          valid: true,
+          expiresAt: latest.expiresAt
+        };
+      } else {
+        status[type] = {
+          valid: false,
+          expiresAt: null
+        };
+      }
+    });
+    res.json(status);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao checar status dos exames' });
+  }
+};
+
+// Buscar exames do usuário por tipo
+const getExamsByType = async (req, res) => {
+  const { type } = req.params;
+  const validTypes = ['blood', 'urine', 'xray', 'mri', 'ct', 'other'];
+  if (!validTypes.includes(type)) {
+    return res.status(400).json({ error: 'Tipo de exame inválido' });
+  }
+  try {
+    const exams = await Exam.find({ userId: req.user._id, type })
+      .sort({ performedAt: -1 });
+    res.json(exams);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar exames por tipo' });
+  }
+};
+
 module.exports = {
   uploadExam,
   getUserExams,
   getExam,
   deleteExam,
-  updateExamStatus
+  updateExamStatus,
+  getExamStatus,
+  getExamsByType
 }; 
