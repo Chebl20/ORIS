@@ -10,7 +10,11 @@ const getAllUsers = async (req, res) => {
       .sort({ createdAt: -1 });
     res.json(users);
   } catch (error) {
-    res.status(500).json({ error: 'Error fetching users' });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch users",
+      error: error.message || "Internal server error"
+    });
   }
 };
 
@@ -26,7 +30,11 @@ const getUserById = async (req, res) => {
 
     res.json(user);
   } catch (error) {
-    res.status(500).json({ error: 'Error fetching user' });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch user",
+      error: error.message || "Internal server error"
+    });
   }
 };
 
@@ -55,7 +63,11 @@ const createUser = async (req, res) => {
     await user.save();
     res.status(201).json(user.getPublicProfile());
   } catch (error) {
-    res.status(500).json({ error: 'Error creating user' });
+    res.status(500).json({
+      success: false,
+      message: "Failed to create user",
+      error: error.message || "Internal server error"
+    });
   }
 };
 
@@ -87,7 +99,11 @@ const updateUser = async (req, res) => {
     await user.save();
     res.json(user.getPublicProfile());
   } catch (error) {
-    res.status(500).json({ error: 'Error updating user' });
+    res.status(500).json({
+      success: false,
+      message: "Failed to update user",
+      error: error.message || "Internal server error"
+    });
   }
 };
 
@@ -107,7 +123,11 @@ const deleteUser = async (req, res) => {
 
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
-    res.status(500).json({ error: 'Error deleting user' });
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete user",
+      error: error.message || "Internal server error"
+    });
   }
 };
 
@@ -166,7 +186,11 @@ const getStats = async (req, res) => {
     });
   } catch (error) {
     console.error('Erro no relatório admin:', error);
-    res.status(500).json({ error: 'Erro ao buscar estatísticas' });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch statistics",
+      error: error.message || "Internal server error"
+    });
   }
 };
 

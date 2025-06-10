@@ -6,7 +6,12 @@ const getProfile = async (req, res) => {
   try {
     res.json(req.user.getPublicProfile());
   } catch (error) {
-    res.status(500).json({ error: 'Error fetching profile' });
+    console.error('Error fetching profile:', error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch profile",
+      error: error.message || "Internal server error"
+    });
   }
 };
 
@@ -33,7 +38,12 @@ const updateProfile = async (req, res) => {
     await req.user.save();
     res.json(req.user.getPublicProfile());
   } catch (error) {
-    res.status(500).json({ error: 'Error updating profile' });
+    console.error('Error updating profile:', error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update profile",
+      error: error.message || "Internal server error"
+    });
   }
 };
 
@@ -58,8 +68,12 @@ const getHealthData = async (req, res) => {
       score: req.user.score
     });
   } catch (error) {
-    console.error('Erro ao buscar dados de saúde:', error);
-    res.status(500).json({ error: 'Error fetching health data' });
+    console.error('Error fetching health data:', error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch health data",
+      error: error.message || "Internal server error"
+    });
   }
 };
 
@@ -165,7 +179,12 @@ const updatePrivacySettings = async (req, res) => {
     await req.user.save();
     res.json(req.user.privacySettings);
   } catch (error) {
-    res.status(500).json({ error: 'Error updating privacy settings' });
+    console.error('Error updating privacy settings:', error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update privacy settings",
+      error: error.message || "Internal server error"
+    });
   }
 };
 
@@ -202,7 +221,12 @@ const getUserDashboard = async (req, res) => {
     };
     res.json(dashboard);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar dashboard do usuário' });
+    console.error('Error fetching user dashboard:', error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch user dashboard",
+      error: error.message || "Internal server error"
+    });
   }
 };
 

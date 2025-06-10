@@ -107,7 +107,11 @@ const login = async (req, res) => {
       refreshToken
     });
   } catch (error) {
-    res.status(500).json({ error: 'Error logging in' });
+    res.status(500).json({
+      success: false,
+      message: "Failed to log in",
+      error: error.message || "Internal server error"
+    });
   }
 };
 
@@ -124,7 +128,11 @@ const refresh = async (req, res) => {
       refreshToken
     });
   } catch (error) {
-    res.status(500).json({ error: 'Error refreshing token' });
+    res.status(500).json({
+      success: false,
+      message: "Failed to refresh token",
+      error: error.message || "Internal server error"
+    });
   }
 };
 
@@ -134,7 +142,11 @@ const logout = async (req, res) => {
     await req.user.save();
     res.json({ message: 'Logged out successfully' });
   } catch (error) {
-    res.status(500).json({ error: 'Error logging out' });
+    res.status(500).json({
+      success: false,
+      message: "Failed to log out",
+      error: error.message || "Internal server error"
+    });
   }
 };
 
@@ -152,7 +164,11 @@ const resetPassword = async (req, res) => {
 
     res.json({ message: 'Senha redefinida com sucesso' });
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao redefinir senha' });
+    res.status(500).json({
+      success: false,
+      message: "Failed to reset password",
+      error: error.message || "Internal server error"
+    });
   }
 };
 

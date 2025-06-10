@@ -226,7 +226,11 @@ const getUserExams = async (req, res) => {
 
     res.json(examsWithFileStatus);
   } catch (error) {
-    res.status(500).json({ error: 'Error fetching exams' });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch exams",
+      error: error.message || "Internal server error"
+    });
   }
 };
 
@@ -253,7 +257,11 @@ const getExam = async (req, res) => {
 
     res.json(examObj);
   } catch (error) {
-    res.status(500).json({ error: 'Error fetching exam' });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch exam",
+      error: error.message || "Internal server error"
+    });
   }
 };
 
@@ -283,7 +291,11 @@ const deleteExam = async (req, res) => {
 
     res.json({ message: 'Exam deleted successfully' });
   } catch (error) {
-    res.status(500).json({ error: 'Error deleting exam' });
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete exam",
+      error: error.message || "Internal server error"
+    });
   }
 };
 
@@ -308,7 +320,11 @@ const updateExamStatus = async (req, res) => {
       exam
     });
   } catch (error) {
-    res.status(500).json({ error: 'Error updating exam status' });
+    res.status(500).json({
+      success: false,
+      message: "Failed to update exam status",
+      error: error.message || "Internal server error"
+    });
   }
 };
 
@@ -340,7 +356,11 @@ const getExamStatus = async (req, res) => {
     });
     res.json(status);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao checar status dos exames' });
+    res.status(500).json({
+      success: false,
+      message: "Failed to check exam status",
+      error: error.message || "Internal server error"
+    });
   }
 };
 
@@ -356,7 +376,11 @@ const getExamsByType = async (req, res) => {
       .sort({ performedAt: -1 });
     res.json(exams);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar exames por tipo' });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch exams by type",
+      error: error.message || "Internal server error"
+    });
   }
 };
 

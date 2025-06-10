@@ -6,34 +6,15 @@ const Checkin = require('../models/checkin.model');
 // Get daily tasks
 const getDailyTasks = async (req, res) => {
   try {
-    // TODO: Implement task generation logic
     const tasks = [
-      {
-        id: 1,
-        title: 'Drink Water',
-        description: 'Drink 8 glasses of water today',
-        points: 10,
-        completed: false
-      },
-      {
-        id: 2,
-        title: 'Exercise',
-        description: '30 minutes of physical activity',
-        points: 20,
-        completed: false
-      },
-      {
-        id: 3,
-        title: 'Healthy Meal',
-        description: 'Eat a balanced meal',
-        points: 15,
-        completed: false
-      }
+      { id: 1, title: 'Drink Water', description: 'Drink 8 glasses of water today', points: 10, completed: false },
+      { id: 2, title: 'Exercise', description: '30 minutes of physical activity', points: 20, completed: false },
+      { id: 3, title: 'Healthy Meal', description: 'Eat a balanced meal', points: 15, completed: false }
     ];
-
     res.json(tasks);
   } catch (error) {
-    res.status(500).json({ error: 'Error fetching daily tasks' });
+    console.error('Erro ao buscar tarefas diárias:', error);
+    res.status(500).json({ error: 'Erro interno ao buscar tarefas diárias', details: error.message });
   }
 };
 
@@ -42,17 +23,17 @@ const completeCheckIn = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      console.warn('Validação falhou no check-in:', errors.array());
+      return res.status(400).json({ error: 'Dados inválidos no check-in', details: errors.array() });
     }
 
     const { tasks } = req.body;
     if (!Array.isArray(tasks)) {
-      return res.status(400).json({ error: 'Tasks must be an array' });
+      return res.status(400).json({ error: 'O campo "tasks" deve ser um array' });
     }
 
     let totalPoints = 0;
 
-    // Buscar pontos das tasks completadas no banco
     for (const task of tasks) {
       if (task.completed === true) {
         const pill = await Pill.findOne({ id: task.id });
@@ -65,30 +46,31 @@ const completeCheckIn = async (req, res) => {
     req.user.score = Number(req.user.score || 0) + totalPoints;
     await req.user.save();
 
-    // Salvar histórico de check-in
+    const checkinTasks = await Promise.all(tasks.map(async task => {
+      const pill = await Pill.findOne({ id: task.id });
+      return {
+        id: task.id,
+        completed: task.completed,
+        points: pill ? pill.points : 0
+      };
+    }));
+
     await Checkin.create({
       userId: req.user._id,
       date: new Date(),
-      tasks: await Promise.all(tasks.map(async task => {
-        const pill = await Pill.findOne({ id: task.id });
-        return {
-          id: task.id,
-          completed: task.completed,
-          points: pill ? pill.points : 0
-        };
-      })),
+      tasks: checkinTasks,
       pointsEarned: totalPoints
     });
 
     res.json({
-      message: 'Check-in completed successfully',
+      message: 'Check-in realizado com sucesso',
       pointsEarned: totalPoints,
       totalScore: req.user.score
     });
   } catch (error) {
-    console.error('Erro no check-in:', error);
+    console.error('Erro durante o check-in:', error);
     res.status(500).json({
-      error: 'Error completing check-in',
+      error: 'Erro interno ao completar o check-in',
       details: error.message
     });
   }
@@ -97,12 +79,11 @@ const completeCheckIn = async (req, res) => {
 // Get user's score
 const getUserScore = async (req, res) => {
   try {
-    res.json({
-      score: req.user.score,
-      rank: await calculateRank(req.user._id)
-    });
+    const rank = await calculateRank(req.user._id);
+    res.json({ score: req.user.score, rank });
   } catch (error) {
-    res.status(500).json({ error: 'Error fetching score' });
+    console.error('Erro ao buscar pontuação do usuário:', error);
+    res.status(500).json({ error: 'Erro interno ao buscar pontuação', details: error.message });
   }
 };
 
@@ -116,20 +97,19 @@ const getLeaderboard = async (req, res) => {
 
     res.json(users);
   } catch (error) {
-    res.status(500).json({ error: 'Error fetching leaderboard' });
+    console.error('Erro ao buscar ranking:', error);
+    res.status(500).json({ error: 'Erro interno ao buscar ranking', details: error.message });
   }
 };
 
 // Helper function to calculate user's rank
 const calculateRank = async (userId) => {
   const user = await User.findById(userId);
-  const usersWithHigherScore = await User.countDocuments({
-    score: { $gt: user.score }
-  });
+  const usersWithHigherScore = await User.countDocuments({ score: { $gt: user.score } });
   return usersWithHigherScore + 1;
 };
 
-// Função utilitária de shuffle determinístico
+// Shuffle utilitário com seed
 function seededShuffle(array, seed) {
   let m = array.length, t, i;
   let s = seed.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
@@ -142,12 +122,12 @@ function seededShuffle(array, seed) {
   return array;
 }
 
-// Buscar 3 pílulas diárias aleatórias e fixas por usuário e dia
+// Get daily pills
 const getDailyPills = async (req, res) => {
   try {
     const allPills = await Pill.find();
     if (allPills.length < 3) {
-      return res.status(400).json({ error: 'Not enough pills in the database' });
+      return res.status(400).json({ error: 'Pílulas insuficientes no banco de dados' });
     }
     const today = new Date();
     const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '');
@@ -156,17 +136,19 @@ const getDailyPills = async (req, res) => {
     const dailyPills = shuffled.slice(0, 3);
     res.json(dailyPills);
   } catch (error) {
-    res.status(500).json({ error: 'Error fetching daily pills' });
+    console.error('Erro ao buscar pílulas diárias:', error);
+    res.status(500).json({ error: 'Erro interno ao buscar pílulas diárias', details: error.message });
   }
 };
 
-// Buscar histórico de check-ins do usuário
+// Get user check-in history
 const getCheckinHistory = async (req, res) => {
   try {
     const history = await Checkin.find({ userId: req.user._id }).sort({ date: -1 });
     res.json(history);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao buscar histórico de check-ins' });
+    console.error('Erro ao buscar histórico de check-ins:', error);
+    res.status(500).json({ error: 'Erro interno ao buscar histórico de check-ins', details: error.message });
   }
 };
 
@@ -177,4 +159,4 @@ module.exports = {
   getLeaderboard,
   getDailyPills,
   getCheckinHistory
-}; 
+};
