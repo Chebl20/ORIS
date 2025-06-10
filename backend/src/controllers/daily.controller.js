@@ -14,7 +14,11 @@ const getDailyTasks = async (req, res) => {
     res.json(tasks);
   } catch (error) {
     console.error('Erro ao buscar tarefas diárias:', error);
-    res.status(500).json({ error: 'Erro interno ao buscar tarefas diárias', details: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch daily tasks",
+      error: error.message || "Internal server error"
+    });
   }
 };
 
@@ -70,8 +74,9 @@ const completeCheckIn = async (req, res) => {
   } catch (error) {
     console.error('Erro durante o check-in:', error);
     res.status(500).json({
-      error: 'Erro interno ao completar o check-in',
-      details: error.message
+      success: false,
+      message: "Failed to complete check-in",
+      error: error.message || "Internal server error"
     });
   }
 };
@@ -83,7 +88,11 @@ const getUserScore = async (req, res) => {
     res.json({ score: req.user.score, rank });
   } catch (error) {
     console.error('Erro ao buscar pontuação do usuário:', error);
-    res.status(500).json({ error: 'Erro interno ao buscar pontuação', details: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch user score",
+      error: error.message || "Internal server error"
+    });
   }
 };
 
@@ -98,7 +107,11 @@ const getLeaderboard = async (req, res) => {
     res.json(users);
   } catch (error) {
     console.error('Erro ao buscar ranking:', error);
-    res.status(500).json({ error: 'Erro interno ao buscar ranking', details: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch leaderboard",
+      error: error.message || "Internal server error"
+    });
   }
 };
 
@@ -137,7 +150,11 @@ const getDailyPills = async (req, res) => {
     res.json(dailyPills);
   } catch (error) {
     console.error('Erro ao buscar pílulas diárias:', error);
-    res.status(500).json({ error: 'Erro interno ao buscar pílulas diárias', details: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch daily pills",
+      error: error.message || "Internal server error"
+    });
   }
 };
 
@@ -148,7 +165,11 @@ const getCheckinHistory = async (req, res) => {
     res.json(history);
   } catch (error) {
     console.error('Erro ao buscar histórico de check-ins:', error);
-    res.status(500).json({ error: 'Erro interno ao buscar histórico de check-ins', details: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch check-in history",
+      error: error.message || "Internal server error"
+    });
   }
 };
 
