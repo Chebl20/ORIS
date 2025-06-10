@@ -9,11 +9,24 @@ const { Server } = require('socket.io');
 const app = express();
 const httpServer = createServer(app);
 
+// CORS configuration
+app.use(cors({
+  origin: (origin, callback) => {
+    // Accept any origin but require credentials
+    callback(null, true);
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  credentials: true
+}));
+
 // Socket.IO setup
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    methods: ['GET', 'POST']
+    origin: (origin, callback) => {
+      callback(null, true);
+    },
+    methods: ['GET', 'POST'],
+    credentials: true
   }
 });
 

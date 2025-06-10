@@ -138,9 +138,28 @@ const logout = async (req, res) => {
   }
 };
 
+// Reset de senha
+const resetPassword = async (req, res) => {
+  const { email, newPassword } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: 'Senha redefinida com sucesso' });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao redefinir senha' });
+  }
+};
+
 module.exports = {
   register,
   login,
   refresh,
-  logout
+  logout,
+  resetPassword
 }; 

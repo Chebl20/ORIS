@@ -27,5 +27,6 @@ router.post('/register', registerValidation, authController.register);
 router.post('/login', loginValidation, authController.login);
 router.post('/refresh', refreshToken, authController.refresh);
 router.post('/logout', auth, authController.logout);
+router.post('/reset-password', authController.resetPassword);
 
 module.exports = router; 

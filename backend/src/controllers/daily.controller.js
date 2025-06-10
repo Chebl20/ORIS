@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 const User = require('../models/user.model');
 const Pill = require('../models/pill.model');
+const Checkin = require('../models/checkin.model');
 
 // Get daily tasks
 const getDailyTasks = async (req, res) => {
@@ -54,7 +55,6 @@ const completeCheckIn = async (req, res) => {
     // Buscar pontos das tasks completadas no banco
     for (const task of tasks) {
       if (task.completed === true) {
-        // Busca a pill pelo campo id (não _id)
         const pill = await Pill.findOne({ id: task.id });
         if (pill && typeof pill.points === 'number') {
           totalPoints += pill.points;
@@ -64,6 +64,21 @@ const completeCheckIn = async (req, res) => {
 
     req.user.score = Number(req.user.score || 0) + totalPoints;
     await req.user.save();
+
+    // Salvar histórico de check-in
+    await Checkin.create({
+      userId: req.user._id,
+      date: new Date(),
+      tasks: await Promise.all(tasks.map(async task => {
+        const pill = await Pill.findOne({ id: task.id });
+        return {
+          id: task.id,
+          completed: task.completed,
+          points: pill ? pill.points : 0
+        };
+      })),
+      pointsEarned: totalPoints
+    });
 
     res.json({
       message: 'Check-in completed successfully',
@@ -78,7 +93,6 @@ const completeCheckIn = async (req, res) => {
     });
   }
 };
-
 
 // Get user's score
 const getUserScore = async (req, res) => {
@@ -146,10 +160,21 @@ const getDailyPills = async (req, res) => {
   }
 };
 
+// Buscar histórico de check-ins do usuário
+const getCheckinHistory = async (req, res) => {
+  try {
+    const history = await Checkin.find({ userId: req.user._id }).sort({ date: -1 });
+    res.json(history);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar histórico de check-ins' });
+  }
+};
+
 module.exports = {
   getDailyTasks,
   completeCheckIn,
   getUserScore,
   getLeaderboard,
-  getDailyPills
+  getDailyPills,
+  getCheckinHistory
 }; 
