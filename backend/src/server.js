@@ -48,7 +48,13 @@ ensureUploadDir();
 // Serve static files from uploads directory
 app.use('/uploads', express.static(config.UPLOAD_PATH));
 
-// Routes
+// Importa a rota de verificação de status
+const aliveRoute = require('./routes/alive.route');
+
+// Rota raiz para verificação de status
+app.use('/', aliveRoute);
+
+// Rotas da API
 app.use('/api', routes);
 
 // Error handling middleware

@@ -48,6 +48,15 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/oris')
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 
+// Health check route
+app.get('/', (req, res) => {
+  res.status(200).json({ 
+    status: 'success',
+    message: 'API is alive and running',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Routes
 app.use('/api/auth', require('./src/routes/auth.routes'));
 app.use('/api/exams', require('./src/routes/exam.routes'));
