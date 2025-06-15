@@ -26,7 +26,18 @@ const register = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, email, password, role } = req.body;
+    const { 
+      name, 
+      email, 
+      password, 
+      role,
+      birthDate,
+      phone,
+      company,
+      department,
+      position,
+      gender
+    } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -39,14 +50,28 @@ const register = async (req, res) => {
       return res.status(400).json({ error: 'Invalid role. Must be either "user" or "admin"' });
     }
 
+    // Validate gender
+    if (!gender || !['masculino', 'feminino', 'outro'].includes(gender)) {
+      return res.status(400).json({ error: 'Invalid gender. Must be either "masculino", "feminino" or "outro"' });
+    }
+
     // Create new user
     const user = new User({
       name,
       email,
       password,
-      birthDate: req.body.birthDate,
-      phone: req.body.phone,
-      role: role || 'user' // Default to 'user' if no role provided
+      birthDate,
+      phone,
+      company,
+      department,
+      position,
+      gender,
+      role: role || 'user', // Default to 'user' if no role provided
+      healthData: {
+        sleepQuality: 'boa',
+        mood: 'bom',
+        fluSymptoms: false
+      }
     });
 
     await user.save();

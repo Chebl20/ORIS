@@ -63,6 +63,7 @@ app.use('/api/exams', require('./src/routes/exam.routes'));
 app.use('/api/users', require('./src/routes/user.routes'));
 app.use('/api/admin', require('./src/routes/admin.routes'));
 app.use('/api/daily', require('./src/routes/daily.routes'));
+app.use('/api/report', require('./src/routes/report.routes'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
