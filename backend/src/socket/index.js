@@ -60,6 +60,86 @@ const initializeSocket = (server) => {
         console.error('Error handling exam status update:', error);
       }
     });
+    
+    // Handle risk report notifications
+    socket.on('riskReportCreated', async (data) => {
+      try {
+        const { riskId, title, priority } = data;
+        
+        // Emit to admins if it's a critical risk
+        if (priority === 'Crítica') {
+          // Find all admin users
+          const User = require('../models/user.model');
+          const admins = await User.find({ role: 'admin' }).select('_id');
+          
+          // Notify each admin
+          admins.forEach(admin => {
+            io.to(admin._id.toString()).emit('newCriticalRisk', {
+              riskId,
+              title,
+              priority,
+              createdAt: new Date()
+            });
+          });
+        }
+      } catch (error) {
+        console.error('Error handling risk report notification:', error);
+      }
+    });
+    
+    // Handle risk status update notifications
+    socket.on('riskStatusUpdated', async (data) => {
+      try {
+        const { riskId, title, status, priority } = data;
+        
+        // Notify the user who is assigned to the risk
+        if (data.assignedTo) {
+          io.to(data.assignedTo.toString()).emit('riskStatusChanged', {
+            riskId,
+            title,
+            status,
+            updatedAt: new Date()
+          });
+        }
+        
+        // Notify admins if risk was reclassified as critical
+        if (priority === 'Crítica' && data.priorityChanged) {
+          const User = require('../models/user.model');
+          const admins = await User.find({ role: 'admin' }).select('_id');
+          
+          admins.forEach(admin => {
+            io.to(admin._id.toString()).emit('riskReclassifiedAsCritical', {
+              riskId,
+              title,
+              priority,
+              updatedAt: new Date()
+            });
+          });
+        }
+      } catch (error) {
+        console.error('Error handling risk status update notification:', error);
+      }
+    });
+    
+    // Handle action plan deadline notifications
+    socket.on('actionPlanDeadlineApproaching', async (data) => {
+      try {
+        const { planId, riskId, riskTitle, deadline, responsible } = data;
+        
+        // Notify the responsible person
+        if (responsible) {
+          io.to(responsible.toString()).emit('actionPlanDeadlineWarning', {
+            planId,
+            riskId,
+            riskTitle,
+            deadline,
+            daysRemaining: data.daysRemaining
+          });
+        }
+      } catch (error) {
+        console.error('Error handling action plan deadline notification:', error);
+      }
+    });
   });
 
   return io;
@@ -75,4 +155,4 @@ const getIO = () => {
 module.exports = {
   initializeSocket,
   getIO
-}; 
+};

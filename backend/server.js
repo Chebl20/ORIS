@@ -64,6 +64,9 @@ app.use('/api/users', require('./src/routes/user.routes'));
 app.use('/api/admin', require('./src/routes/admin.routes'));
 app.use('/api/daily', require('./src/routes/daily.routes'));
 app.use('/api/report', require('./src/routes/report.routes'));
+app.use('/api/risks', require('./src/routes/risk.routes'));
+app.use('/api/action-plans', require('./src/routes/action-plan.routes'));
+app.use('/api/reports', require('./src/routes/risk-report.routes'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -83,7 +86,11 @@ io.on('connection', (socket) => {
   });
 });
 
+// Inicializar tarefas agendadas (cron jobs)
+const cronJobs = require('./src/cron');
+cronJobs.initCronJobs();
+
 const PORT = process.env.PORT || 5000;
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-}); 
+});
